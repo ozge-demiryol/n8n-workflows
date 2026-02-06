@@ -1,0 +1,705 @@
+{
+  "name": "My workflow 2",
+  "nodes": [
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "check-message-exists",
+              "leftValue": "={{ $json.entry[0].changes[0].value.messages }}",
+              "rightValue": "",
+              "operator": {
+                "type": "array",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "61b2c10e-30b0-40c3-abae-e9b6bfc524a5",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "8e6b3a72-2af2-4fbf-82d1-29763211f48e",
+      "name": "Has Message?",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [
+        -2384,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c09d4a3e-cc27-4f5f-b519-687d27d6c7e6",
+              "name": "message_type",
+              "value": "={{ $('Mock WhatsApp Webhook').item.json.entry[0].changes[0].value.messages[0].type }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "67e0fc57-e3cf-4e8a-87da-0f3a3f955e95",
+      "name": "Extract Metadata",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2160,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message_type }}",
+                    "rightValue": "text",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "3e8f7cc9-bc34-4220-8570-700123260115"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Text Message"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message_type }}",
+                    "rightValue": "audio",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "73e9cf28-c317-47f3-accc-ab329bd8bc08"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Voice Message"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3207a810-2e5c-4025-bfc0-b2f6a930765f",
+      "name": "Message Type",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        -1936,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "79d0e51b-2784-4a94-a687-783d188aaf2b",
+              "name": "user_message",
+              "value": "={{ $('Mock WhatsApp Webhook').item.json.entry[0].changes[0].value.messages[0].text.body }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3595c08f-fe4e-49e2-bcf3-038a03949009",
+      "name": "Final Text",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1248,
+        256
+      ]
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Mock WhatsApp Webhook').item.json.entry[0].changes[0].value.contacts[0].wa_id }}",
+        "contextWindowLength": 15
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -1232,
+        1024
+      ],
+      "id": "445f7a70-0b84-4cfe-b760-427fd9c721dd",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "",
+          "mode": "list",
+          "cachedResultName": ""
+        },
+        "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}",
+        "end": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",
+        "additionalFields": {
+          "attendees": [
+            "={{ $fromAI('Patient_Email') }}"
+          ],
+          "location": ""
+        }
+      },
+      "id": "149fe81e-694f-47e1-8ea7-98f63bc2c754",
+      "name": "Create Event",
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "position": [
+        -976,
+        1024
+      ],
+      "typeVersion": 1.3,
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "calendar",
+        "calendar": {
+          "__rl": true,
+          "value": "",
+          "mode": "list",
+          "cachedResultName": ""
+        },
+        "timeMin": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start_Time', ``, 'string') }}",
+        "timeMax": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End_Time', ``, 'string') }}",
+        "options": {}
+      },
+      "id": "6a9f1e0a-bed2-4d51-8eec-b4bf7939a182",
+      "name": "Check Availability",
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "position": [
+        -1104,
+        1024
+      ],
+      "typeVersion": 1.3,
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "messages"
+        ],
+        "options": {}
+      },
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "typeVersion": 1,
+      "position": [
+        -2608,
+        272
+      ],
+      "id": "5037d135-3fbb-4e09-8837-917ef99f2756",
+      "name": "WhatsApp Trigger",
+      "webhookId": ""
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "recipientPhoneNumber": "={{ $('Mock WhatsApp Webhook').item.json.entry[0].changes[0].value.messages[0].from }}",
+        "textBody": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        -672,
+        800
+      ],
+      "id": "e17820e0-0291-4c71-8c0e-87102a0562a5",
+      "name": "Send message",
+      "webhookId": ""
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -1360,
+        1024
+      ],
+      "id": "2cc1a2da-ec91-45d0-9b19-208ca5655285",
+      "name": "OpenAI Chat Model"
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "calendar": {
+          "__rl": true,
+          "value": "",
+          "mode": "list",
+          "cachedResultName": ""
+        },
+        "eventId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Event_ID', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        -848,
+        1024
+      ],
+      "id": "5fddc1a5-092b-45be-838a-c228934383a1",
+      "name": "Delete Event1",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        }
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        -720,
+        1024
+      ],
+      "id": "050a293d-ffb1-45f4-b9f1-1ff35938dffe",
+      "name": "Save patient",
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        }
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        -592,
+        1024
+      ],
+      "id": "a921664c-2cf9-4153-8ffd-c240b886d623",
+      "name": "Save appointment",
+      "credentials": {
+        "postgres": {
+          "id": "",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://graph.facebook.com/v20.0/{{ $json.audioId }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "whatsAppApi",
+        "options": {}
+      },
+      "id": "2b07a582-870f-4ad8-901e-4b9508267acb",
+      "name": "Get Audio URL1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1712,
+        352
+      ],
+      "executeOptions": {
+        "retryOnFail": true,
+        "maxRetries": 3,
+        "waitBetweenRetries": 5000
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "whatsAppApi",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "51b644e3-a7f5-4681-ba0f-742ae6ed3e77",
+      "name": "Download Audio File1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1552,
+        352
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {}
+      },
+      "id": "f27567b0-d249-4a3a-bb72-aac7e92edf86",
+      "name": "Transcribe Audio (Whisper)1",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -1376,
+        352
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Whatsapp\n\nAdd your Whatsapp Business credentials"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2624,
+        80
+      ],
+      "typeVersion": 1,
+      "id": "55447e2c-d506-43c6-8afc-da5f806c4c26",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Whisper \nThis node is added to parse audio WhatsApp message with Whisper. Add your OpenAPI credentials in this node"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1488,
+        544
+      ],
+      "typeVersion": 1,
+      "id": "000dbabf-0e39-47c4-8350-f81e28921492",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Patient Data\nAdd your db credentials and table name to store patient and appointment data"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -880,
+        1168
+      ],
+      "typeVersion": 1,
+      "id": "63e9810e-8f43-466e-adba-773cebdf1c88",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=# Persona\nYou are the \"Dental Clinic Appointment Assistant,\" a specialized virtual coordinator for Dr. [Name]. Your goal is to provide a seamless, professional, and empathetic booking experience while maintaining strict calendar accuracy.\n\n# Operating Hours\n- Mon - Fri: 09:00 - 20:00\n- Sat: 09:00 - 13:00\n- Sun: Closed\n\n# Treatment Matrix & Logistics\nCalculate schedules using the durations below. **Crucial:** Always add a mandatory 15-minute buffer (break) between treatments.\n\n| Treatment Type | Duration |\n| :--- | :--- |\n| Routine Check-up / Emergency Exam | 30 min |\n| Scaling / Extraction / Prosthetic Prep | 45 min |\n| Filling / Implant Consultation / Ortho Consultation | 60 min |\n| Root Canal / Teeth Whitening | 90 min |\n| Implant Surgery | 120 min |\n| Ortho/Prosthetic Control | 30 min |\n\n# Workflow Instructions\n\n### 1. Intake (Mandatory Data Collection)\nBefore confirming any slot, collect:\n- Full Name, Age, and Treatment Type.\n- Status: New or Returning patient?\n- Medical Alerts: Pregnancy, chronic illnesses, medications (specifically blood thinners), or allergies.\n- Urgency: Is this an emergency?\n\n### 2. Cancellation & Rescheduling (ID-Based)\nIf a patient wants to cancel or change their time:\n- **Step A (Search):** Use the `Search Appointments` tool (via Name or Phone) to find the patient's record.\n- **Step B (Extract ID):** You MUST retrieve the `event_id` from the search results. You cannot delete an event without this ID.\n- **Step C (Policy Check):** Verify if \"Current Time\" is > 24h from \"Appointment Start\".\n- **Step D (Action):** - To Cancel: Trigger `Delete Event` using the `event_id`.\n    - To Reschedule: Trigger `Delete Event` for the old `event_id`, then follow Booking logic for the new slot.\n\n### 3. Availability & Logic\n- **Conflict Resolution:** If a requested time is outside hours or booked, apologize and offer the next three available slots.\n- **Urgency:** Prioritize emergency exams for the earliest possible opening.\n- **Safety Warnings:** - Pregnancy: Warn about X-rays if the treatment requires them.\n    - Blood Thinners: Issue a warning for surgical procedures (Extraction/Implant).\n    - Minors (<18): State that parental consent is required.\n\n### 4. Tool Integration & Finalization\nOnce the patient confirms a time:\n- Use `Check Availability` to verify the slot.\n- Use `Create Event` for Google Calendar. Format: \"[Patient Name] - [Treatment] - [Phone]\".\n- Use `Save patient` for PostgreSQL with full medical notes.\n- Use `Delete Event` for appointment cancellation.\n- Inform the patient: 24-hour cancellation policy applies; a reminder will be sent 1 day prior.\n\n# Communication Guidelines\n- **Tone:** Professional, clear, and welcoming.\n- **Verification:** Always repeat the final date and time back to the patient for a \"Hard Confirmation\" before ending the chat.\n\n# Context\nToday's Date: {{ $now }}."
+        }
+      },
+      "id": "7911b9a7-8314-4db8-b44e-573d8a874cb0",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        -1072,
+        800
+      ],
+      "typeVersion": 1.7
+    },
+    {
+      "parameters": {
+        "content": "## AI Agent\nAdd your OpenAI credential in this node"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1408,
+        1152
+      ],
+      "typeVersion": 1,
+      "id": "db0ab6bf-06f0-458b-a580-7513930061a6",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -2608,
+        432
+      ],
+      "id": "e6f5924f-a5ec-4130-9d8e-f5c0603b2261",
+      "name": "When chat message received",
+      "webhookId": ""
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Has Message?": {
+      "main": [
+        [
+          {
+            "node": "Extract Metadata",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Metadata": {
+      "main": [
+        [
+          {
+            "node": "Message Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message Type": {
+      "main": [
+        [
+          {
+            "node": "Final Text",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Audio URL1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Final Text": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Availability": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Event": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WhatsApp Trigger": {
+      "main": [
+        [
+          {
+            "node": "Has Message?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Event1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save patient": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save appointment": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Audio URL1": {
+      "main": [
+        [
+          {
+            "node": "Download Audio File1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Audio File1": {
+      "main": [
+        [
+          {
+            "node": "Transcribe Audio (Whisper)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe Audio (Whisper)1": {
+      "main": [
+        [
+          {
+            "node": "Final Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "",
+  "meta": {
+    "instanceId": ""
+  },
+  "id": "",
+  "tags": []
+}
