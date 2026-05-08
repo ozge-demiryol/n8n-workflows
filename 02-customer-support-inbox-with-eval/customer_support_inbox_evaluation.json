@@ -1,0 +1,1091 @@
+{
+  "name": "Customer Support Inbox Evaluation",
+  "nodes": [
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": {
+          "__rl": true,
+          "value": "knowledge_base",
+          "mode": "list",
+          "cachedResultName": "knowledge_base"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        1264,
+        3280
+      ],
+      "id": "18008b28-cdfe-4969-bc05-a70cf55be28b",
+      "name": "Supabase Vector Store",
+      "credentials": {
+        "supabaseApi": {
+          "id": "",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-embedding-2"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1408,
+        3664
+      ],
+      "id": "350304cc-ca87-414f-b5d0-3ff954f05886",
+      "name": "Embeddings Google Gemini",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        1376,
+        3456
+      ],
+      "id": "d2627236-3fbd-4359-beb3-c5119d227953",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolName": "knowledge_base",
+        "toolDescription": "Search this tool to find information about product knowledge, technical integrations, escalation rules, pricing plans, and security responses. Use this for any factual inquiries regarding company operations",
+        "memoryKey": {
+          "__rl": true,
+          "value": "vector_store_key",
+          "mode": "list",
+          "cachedResultName": "vector_store_key"
+        },
+        "topK": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreInMemory",
+      "typeVersion": 1.2,
+      "position": [
+        1280,
+        2976
+      ],
+      "id": "c4031e1e-2629-40c9-b5ff-85e999ef9487",
+      "name": "Query Data Tool"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "inbox-inferno",
+        "authentication": "jwtAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "694b7fda-dfd7-4789-b303-32827ef902e5",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        384,
+        2496
+      ],
+      "webhookId": "inbox-inferno",
+      "credentials": {
+        "jwtAuth": {
+          "id": "",
+          "name": "JWT Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## ① Classify\nDetermine incoming email category: security, setup, pricing and so on.\n",
+        "height": 128,
+        "width": 232,
+        "color": 3
+      },
+      "id": "483897b1-d15c-4c87-83f3-581c69cdcbe1",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        624,
+        2416
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## ② Lookup Docs\nRetrieve relevant company documentation for the reply.",
+        "height": 112,
+        "width": 226,
+        "color": 3
+      },
+      "id": "7ed0eb27-a4c4-48f1-8c4d-559518d9f06a",
+      "name": "Sticky Note12",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1552,
+        2960
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## ③ Draft Reply\nGenerate a grounded response using the docs.\n\n",
+        "height": 112,
+        "width": 226,
+        "color": 3
+      },
+      "id": "c822e039-07c9-4684-bff2-4d5efe0771aa",
+      "name": "Sticky Note13",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1424,
+        2528
+      ]
+    },
+    {
+      "parameters": {
+        "source": "googleSheets",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SPREADSHEET_ID",
+          "mode": "list",
+          "cachedResultName": "nexus-inbox-inferno-test-dataset",
+          "cachedResultUrl": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1893026158,
+          "mode": "list",
+          "cachedResultName": "nexus-inbox-inferno-test-datase",
+          "cachedResultUrl": ""
+        },
+        "outputs": {
+          "values": [
+            {
+              "outputName": "actual_category",
+              "outputValue": "={{ $json.category }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.evaluation",
+      "typeVersion": 4.8,
+      "position": [
+        1184,
+        2480
+      ],
+      "id": "65478ed6-bf2b-4bcb-897d-d86d75839174",
+      "name": "Write result1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "You are an expert evaluator assessing the quality of automated customer support email replies.\n\nYou will be given the original CUSTOMER EMAIL and the AUTO REPLY sent in response. Your task is to determine whether the auto reply is appropriate and score it accordingly.\n\n## Grading Criteria\n\n1. **Correct category** — The reply correctly identifies and addresses the type of issue raised (e.g., billing, technical, account, shipping)\n2. **Grounded reply** — All information provided in the reply is accurate and based on verifiable facts; no hallucinated policies, prices, timelines, or instructions\n3. **Proper escalation** — If the issue is complex, sensitive, or outside the scope of automation, the reply appropriately escalates to a human agent\n\n## Scoring\n\n- Score **1** — The reply correctly identifies the category AND contains no hallucinated information AND escalates when required.\n- Score **0** — Any single failure: wrong category, hallucinated content, or missed escalation\n\n## Evaluation Process\n\n1. Identify the core issue and intent in the CUSTOMER EMAIL\n2. Check whether the AUTO REPLY addresses the correct category of that issue\n3. Verify that all factual claims in the reply are plausible and grounded — flag anything that appears fabricated or unverifiable\n4. Assess whether the issue warranted escalation and, if so, whether the reply handled that correctly\n5. Provide detailed step-by-step reasoning before stating your score\n6. Summarize your reasoning in one sentence\n7. Do not state your final score at the beginning of your reasoning\n\n## Output Format\n\nReturn your evaluation as a JSON object:\n\n{\n  \"extended_reasoning\": \"<detailed step-by-step analysis of category, grounding, and escalation>\",\n  \"reasoning_summary\": \"<one sentence summary of your conclusion>\",\n  \"score\": <0 or 1>\n}\n\n## Examples\n\n**CUSTOMER EMAIL:** \"I was charged twice for my subscription this month. Please fix this immediately.\"\n**AUTO REPLY:** \"We're sorry to hear this. Duplicate charges are usually resolved within 3–5 business days. Our billing team will review your account and issue a refund if applicable.\"\n**EVALUATION:** Score 1 — Correct category (billing), reply is grounded and appropriately routes to the billing team.\n\n---\n\n**CUSTOMER EMAIL:** \"My account has been hacked and someone changed my email address.\"\n**AUTO REPLY:** \"Thank you for reaching out! You can reset your password at any time using the forgot password link on our login page.\"\n**EVALUATION:** Score 0 — Missed escalation. A compromised account with a changed email is a security emergency requiring immediate human intervention; a self-service password reset is insufficient and potentially harmful advice.",
+              "role": "model"
+            },
+            {
+              "content": "=Expected action: {{ $('Evaluation Dataset').item.json.expected_action }}\n\nFACTS: \n{{ $json.output }}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1680,
+        2688
+      ],
+      "id": "22d855d3-659e-4fcc-a659-ca8f88f2cbaa",
+      "name": "Calculate doc relevance metrics1",
+      "retryOnFail": false,
+      "notesInFlow": true,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      },
+      "onError": "continueErrorOutput",
+      "notes": "When evaluation fails, escalate the customer mail to human review"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SPREADSHEET_ID",
+          "mode": "list",
+          "cachedResultName": "nexus-product-knowledge",
+          "cachedResultUrl": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 545109226,
+          "mode": "list",
+          "cachedResultName": "nexus-product-knowledge",
+          "cachedResultUrl": ""
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        880,
+        2992
+      ],
+      "id": "7ed55e57-bb7a-4919-8bbe-f0354eb27227",
+      "name": "Product knowledge",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SPREADSHEET_ID",
+          "mode": "list",
+          "cachedResultName": "nexus-product-integrations",
+          "cachedResultUrl": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2093855690,
+          "mode": "list",
+          "cachedResultName": "nexus-connectors",
+          "cachedResultUrl": ""
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        880,
+        3136
+      ],
+      "id": "0296757c-0cb1-4af2-bddb-f66948973c47",
+      "name": "Product integration",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SPREADSHEET_ID",
+          "mode": "list",
+          "cachedResultName": "nexus-escalation-rules",
+          "cachedResultUrl": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1483494880,
+          "mode": "list",
+          "cachedResultName": "nexus-escalation-rules",
+          "cachedResultUrl": ""
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        880,
+        3296
+      ],
+      "id": "f2f81490-3046-460e-a3d0-dd0e9a4633b7",
+      "name": "Escalation rules",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SPREADSHEET_ID",
+          "mode": "list",
+          "cachedResultName": "nexus-customer-list",
+          "cachedResultUrl": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1311407954,
+          "mode": "list",
+          "cachedResultName": "nexus-customers",
+          "cachedResultUrl": ""
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        880,
+        3456
+      ],
+      "id": "ea8fbb67-d52f-415e-b07b-7772b5272df9",
+      "name": "Customer list",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SPREADSHEET_ID",
+          "mode": "list",
+          "cachedResultName": "nexus-pricing-plans",
+          "cachedResultUrl": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 21210099,
+          "mode": "list",
+          "cachedResultName": "nexus-pricing-plans",
+          "cachedResultUrl": ""
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        880,
+        3616
+      ],
+      "id": "c9c5f62e-8103-4f7e-b399-ae3698604429",
+      "name": "Pricing plans",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SPREADSHEET_ID",
+          "mode": "list",
+          "cachedResultName": "nexus-security-approved-responses",
+          "cachedResultUrl": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 207773088,
+          "mode": "list",
+          "cachedResultName": "nexus-security-approved-responses",
+          "cachedResultUrl": ""
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        880,
+        3776
+      ],
+      "id": "f7ce7df6-8cf7-4a76-9b82-f2ebb5e585b9",
+      "name": "Security approved responses",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        368,
+        3280
+      ],
+      "id": "f324e6a0-d872-414a-a774-ca8b6bc62c64",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"response\": {{ JSON.stringify($('AI Draft Writer').item.json.output) }}\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2288,
+        2832
+      ],
+      "id": "34410ef2-92bf-4a7e-b6d1-a7d138701a17",
+      "name": "Send reply",
+      "retryOnFail": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"response\": {{ JSON.stringify($('Draft Writer Agent').item.json.output) }}\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2400,
+        3024
+      ],
+      "id": "a317b96f-19cf-4dca-bc12-f0e8f1843ba9",
+      "name": "Escalate"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "ef30d73a-49a9-4838-8a78-4c6ccbb2883b",
+              "leftValue": "={{ $json.score }}",
+              "rightValue": 1,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2112,
+        2848
+      ],
+      "id": "3b177b35-f948-499a-8db0-0179a5cc266a",
+      "name": "Check accuracy"
+    },
+    {
+      "parameters": {
+        "source": "googleSheets",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SPREADSHEET_ID",
+          "mode": "list",
+          "cachedResultName": "nexus-inbox-inferno-test-dataset",
+          "cachedResultUrl": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1893026158,
+          "mode": "list",
+          "cachedResultName": "nexus-inbox-inferno-test-datase",
+          "cachedResultUrl": ""
+        },
+        "limitRows": true,
+        "maxRows": 1
+      },
+      "type": "n8n-nodes-base.evaluationTrigger",
+      "typeVersion": 4.7,
+      "position": [
+        384,
+        2688
+      ],
+      "id": "8a933d83-f4f2-486c-bccd-0920e08737c7",
+      "name": "Evaluation Dataset",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## ⑤ Scheduler\nUpdate knowledge base every midnight",
+        "height": 112,
+        "width": 226,
+        "color": 3
+      },
+      "id": "4f3009c1-7664-445c-b1c6-ae6444ff77e4",
+      "name": "Sticky Note15",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        320,
+        3120
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an email classifier for Nexus Integrations, a B2B integration software company.\n\nYour only job is to read the incoming email and return the correct category as a JSON object.\n\n## Categories\n\n- **setup**: Connecting, configuring, or troubleshooting integrations. Includes authentication errors,\n  field mapping, sync issues, and getting-started questions.\n\n- **security**: Encryption, compliance certifications (SOC 2, ISO 27001, HIPAA), data storage\n  locations, privacy policies, and OAuth/API key questions.\n\n- **pricing**: Plan comparisons, upgrade questions, overage fees, nonprofit discounts,\n  and Enterprise pricing inquiries.\n\n- **billing**: Invoice requests, payment issues, and billing account questions.\n\n- **legal**: Data Processing Agreements (DPA), GDPR documentation, contracts,\n  and compliance paperwork.\n\n- **sales**: Enterprise contract renewals, partnership or reseller inquiries,\n  and business development opportunities.\n\n- **hr**: Job applications, internship requests, and recruiting outreach from candidates.\n\n- **spam**: Recruiter solicitations offering candidates, vendor solicitations,\n  misdirected emails, wrong recipient, and anything completely unrelated to Nexus Integrations.\n\n## Tie-breaking rules\n\n- \"hr\" vs \"spam\": hr = a person applying TO Nexus (candidate); \n  spam = a recruiter or vendor soliciting Nexus (outbound sales to us).\n- \"setup\" covers both first-time configuration AND ongoing sync/field issues —\n  if it's about making something work, it's setup.\n- \"security\" vs \"legal\": security = certifications and data handling;\n  legal = contracts and compliance documents (DPA, BAA paperwork).\n- \"pricing\" vs \"sales\": pricing = questions about published plan costs;\n  sales = custom quotes, renewals, or partnership discussions.\n- \"billing\" is strictly about invoices and payment — not plan pricing.\n\n## Rules\n\n- Choose exactly one category.\n- Do not explain your reasoning.\n- Return only valid JSON.\n\n## Output format\n\n{\"category\": \"<category>\"}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=From: {{ $json.body.from || $json.from_email}} Subject: {{ $json.body.subject || $json.subject }} Body: {{ $json.body.body || $json.body }}"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        608,
+        2592
+      ],
+      "id": "cc418ac1-24a2-4c7e-948d-4c7fc3095a31",
+      "name": "Classify Category"
+    },
+    {
+      "parameters": {
+        "content": "## ④ LLM-as-Judge\nEvaluate the accuracy of draft replies with a stronger model",
+        "height": 112,
+        "width": 242,
+        "color": 3
+      },
+      "id": "a8316a01-89dd-40c5-bea4-a9ff9b007afa",
+      "name": "Sticky Note16",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1776,
+        2544
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        576,
+        2816
+      ],
+      "id": "c0d668d9-cf66-4cc7-8aab-cc2e10ec4996",
+      "name": "Classifier (GPT 4o Mini)",
+      "credentials": {
+        "openAiApi": {
+          "id": "",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a customer support agent for Nexus Integrations, a B2B integration software company.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nINCOMING EMAIL\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nCategory : {{ $json.category }}\nFrom     : {{ $json.from }}\nSubject  : {{ $json.subject }}\nBody     : {{ $json.body }}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nSTEP 1 — CHECK ESCALATION (always do this first)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nCall the escalation_rules tool immediately. Check whether\nthis email's category or content matches any escalation rule.\n\nAlso escalate immediately if the category is any of:\nbilling, legal, sales, hr, spam\n\nIf escalation is required, respond with ONLY this — \nno additional text before or after:\n\n\"Thank you for reaching out. Your request requires\npersonalized attention from our team. I've flagged this\nfor a specialist who will follow up within 1 business day.\nWe appreciate your patience.\n\nBest regards,\nNexus Integrations Support Team\"\n\nThen stop. Do not call any other tools. Do not attempt a \npartial answer.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nSTEP 2 — FETCH RELEVANT KNOWLEDGE\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nOnly reach this step if no escalation applies.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nSTEP 3 — DRAFT THE REPLY\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nUse ONLY what the tools returned. Do not use your training\nknowledge for pricing figures, technical details, security\npolicies, or product specifics. If the tools did not return\nenough information to answer correctly and completely,\nescalate using the message in Step 1 instead.\n\nTONE BY CATEGORY:\n- setup    → numbered steps, exact UI paths, empathetic tone\n- pricing  → factual, exact figures only, no upsell language\n- security → precise, use exact wording from tool results,\n             no vague reassurances without documented backing\n\nWRITING RULES:\n- Open with the customer's first name if identifiable\n- Be concise — no filler sentences\n- Do not mention you are an AI\n- Never say \"Great question!\" or similar\n- Write only the email body — no subject line\n- Close with:\n  \"Best regards,\n  Nexus Integrations Support Team\"\n- Output only the plain email body. Nothing else.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1168,
+        2688
+      ],
+      "id": "ee41d235-0f96-4a5e-b122-518e9209a16c",
+      "name": "AI Agent",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-3.5-turbo",
+          "mode": "list",
+          "cachedResultName": "gpt-3.5-turbo"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1072,
+        2880
+      ],
+      "id": "b52c9076-311e-4b5a-988c-7b8fa80de513",
+      "name": "Draft Writer Model (GPT 4o Mini)",
+      "credentials": {
+        "openAiApi": {
+          "id": "",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "try{\n  const raw = $input.first().json.content.parts[0].text;\n\n// Strip the markdown code fences\nconst cleaned = raw\n  .replace(/^```json\\n/, '')\n  .replace(/\\n```$/, '')\n  .trim();\n\nconst parsed = JSON.parse(cleaned);\n\nreturn {\n  extended_reasoning: parsed.extended_reasoning,\n  reasoning_summary: parsed.reasoning_summary,\n  score: parsed.score,\n  error: null\n};\n} catch (err){\n  return {\n  extended_reasoning: null,\n  reasoning_summary: null,\n  score: 0,\n  error: Error\n};\n}\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1984,
+        2672
+      ],
+      "id": "f1e1ac3f-8e58-4fda-945f-a87d40115e7e",
+      "name": "Parse results"
+    },
+    {
+      "parameters": {
+        "source": "googleSheets",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SPREADSHEET_ID",
+          "mode": "list",
+          "cachedResultName": "nexus-inbox-inferno-test-dataset",
+          "cachedResultUrl": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1893026158,
+          "mode": "list",
+          "cachedResultName": "nexus-inbox-inferno-test-datase",
+          "cachedResultUrl": ""
+        },
+        "outputs": {
+          "values": [
+            {
+              "outputName": "actual_category",
+              "outputValue": "={{ $('Map fields').item.json.category }}"
+            },
+            {
+              "outputName": "score",
+              "outputValue": "={{ $json.score }}"
+            },
+            {
+              "outputName": "reasoning_summary",
+              "outputValue": "={{ $json.reasoning_summary }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.evaluation",
+      "typeVersion": 4.8,
+      "position": [
+        2176,
+        2672
+      ],
+      "id": "97897cbe-f9df-4835-94e7-d52cd476dcda",
+      "name": "Write into test dataset",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "let category = 'unknown';\ntry {\n  const raw = $input.first().json.text.replace(/```json|```/g, '').trim();\n  category = JSON.parse(raw).category;\n} catch(e) {}\n\nlet from = '', subject = '', body = '';\ntry { from    = $('Webhook').first().json.from;    } catch(e) {}\ntry { subject = $('Webhook').first().json.subject; } catch(e) {}\ntry { body    = $('Webhook').first().json.body;    } catch(e) {}\n\ntry { if (!from)    from    = $('Evaluation Dataset').first().json.from_email || $('Evaluation Dataset').first().json.from; } catch(e) {}\ntry { if (!subject) subject = $('Evaluation Dataset').first().json.subject; } catch(e) {}\ntry { if (!body)    body    = $('Evaluation Dataset').first().json.body;    } catch(e) {}\n\nreturn [{ json: { category, from, subject, body } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        912,
+        2592
+      ],
+      "id": "e7a83811-cac4-4920-8f4d-876cc23b62ed",
+      "name": "Map fields"
+    },
+    {
+      "parameters": {
+        "operation": "checkIfEvaluating"
+      },
+      "type": "n8n-nodes-base.evaluation",
+      "typeVersion": 4.8,
+      "position": [
+        1504,
+        2672
+      ],
+      "id": "a67b1499-77fb-4275-aa55-18f808e50e4c",
+      "name": "Evaluation draft writer"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Embeddings Google Gemini": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          },
+          {
+            "node": "Query Data Tool",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query Data Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Classify Category",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate doc relevance metrics1": {
+      "main": [
+        [
+          {
+            "node": "Parse results",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Escalate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Product knowledge": {
+      "main": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Product integration": {
+      "main": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Escalation rules": {
+      "main": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Customer list": {
+      "main": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pricing plans": {
+      "main": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Security approved responses": {
+      "main": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check accuracy": {
+      "main": [
+        [
+          {
+            "node": "Send reply",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Escalate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluation Dataset": {
+      "main": [
+        [
+          {
+            "node": "Classify Category",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Product knowledge",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Product integration",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Escalation rules",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Customer list",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Pricing plans",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Security approved responses",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classify Category": {
+      "main": [
+        [
+          {
+            "node": "Map fields",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send reply": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Escalate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classifier (GPT 4o Mini)": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Classify Category",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Evaluation draft writer",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Escalate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Draft Writer Model (GPT 4o Mini)": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse results": {
+      "main": [
+        [
+          {
+            "node": "Write into test dataset",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Check accuracy",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map fields": {
+      "main": [
+        [
+          {
+            "node": "Write result1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluation draft writer": {
+      "main": [
+        [
+          {
+            "node": "Calculate doc relevance metrics1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Calculate doc relevance metrics1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": ""
+  },
+  "id": "",
+  "tags": []
+}
