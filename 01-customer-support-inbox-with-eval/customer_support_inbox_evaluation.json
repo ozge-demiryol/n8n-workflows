@@ -14,10 +14,7 @@
       },
       "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
       "typeVersion": 1.3,
-      "position": [
-        1264,
-        3280
-      ],
+      "position": [1264, 3280],
       "id": "18008b28-cdfe-4969-bc05-a70cf55be28b",
       "name": "Supabase Vector Store",
       "credentials": {
@@ -33,10 +30,7 @@
       },
       "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
       "typeVersion": 1,
-      "position": [
-        1408,
-        3664
-      ],
+      "position": [1408, 3664],
       "id": "350304cc-ca87-414f-b5d0-3ff954f05886",
       "name": "Embeddings Google Gemini",
       "credentials": {
@@ -52,10 +46,7 @@
       },
       "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
       "typeVersion": 1.1,
-      "position": [
-        1376,
-        3456
-      ],
+      "position": [1376, 3456],
       "id": "d2627236-3fbd-4359-beb3-c5119d227953",
       "name": "Default Data Loader"
     },
@@ -74,17 +65,14 @@
       },
       "type": "@n8n/n8n-nodes-langchain.vectorStoreInMemory",
       "typeVersion": 1.2,
-      "position": [
-        1280,
-        2976
-      ],
+      "position": [1280, 2976],
       "id": "c4031e1e-2629-40c9-b5ff-85e999ef9487",
       "name": "Query Data Tool"
     },
     {
       "parameters": {
         "httpMethod": "POST",
-        "path": "inbox-inferno",
+        "path": "your-webhook-path",
         "authentication": "jwtAuth",
         "responseMode": "responseNode",
         "options": {}
@@ -93,11 +81,8 @@
       "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [
-        384,
-        2496
-      ],
-      "webhookId": "inbox-inferno",
+      "position": [240, 2512],
+      "webhookId": "your-webhook-path",
       "credentials": {
         "jwtAuth": {
           "id": "",
@@ -116,10 +101,7 @@
       "name": "Sticky Note",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
-      "position": [
-        624,
-        2416
-      ]
+      "position": [624, 2416]
     },
     {
       "parameters": {
@@ -132,10 +114,7 @@
       "name": "Sticky Note12",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
-      "position": [
-        1552,
-        2960
-      ]
+      "position": [1552, 2960]
     },
     {
       "parameters": {
@@ -148,27 +127,24 @@
       "name": "Sticky Note13",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
-      "position": [
-        1424,
-        2528
-      ]
+      "position": [1424, 2528]
     },
     {
       "parameters": {
         "source": "googleSheets",
         "documentId": {
           "__rl": true,
-          "value": "YOUR_SPREADSHEET_ID",
+          "value": "",
           "mode": "list",
-          "cachedResultName": "nexus-inbox-inferno-test-dataset",
-          "cachedResultUrl": ""
+          "cachedResultName": "nexus-your-webhook-path-test-dataset",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d//edit?usp=drivesdk"
         },
         "sheetName": {
           "__rl": true,
           "value": 1893026158,
           "mode": "list",
-          "cachedResultName": "nexus-inbox-inferno-test-datase",
-          "cachedResultUrl": ""
+          "cachedResultName": "nexus-your-webhook-path-test-datase",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d//edit#gid=1893026158"
         },
         "outputs": {
           "values": [
@@ -181,10 +157,7 @@
       },
       "type": "n8n-nodes-base.evaluation",
       "typeVersion": 4.8,
-      "position": [
-        1184,
-        2480
-      ],
+      "position": [1184, 2480],
       "id": "65478ed6-bf2b-4bcb-897d-d86d75839174",
       "name": "Write result1",
       "credentials": {
@@ -205,7 +178,7 @@
         "messages": {
           "values": [
             {
-              "content": "You are an expert evaluator assessing the quality of automated customer support email replies.\n\nYou will be given the original CUSTOMER EMAIL and the AUTO REPLY sent in response. Your task is to determine whether the auto reply is appropriate and score it accordingly.\n\n## Grading Criteria\n\n1. **Correct category** — The reply correctly identifies and addresses the type of issue raised (e.g., billing, technical, account, shipping)\n2. **Grounded reply** — All information provided in the reply is accurate and based on verifiable facts; no hallucinated policies, prices, timelines, or instructions\n3. **Proper escalation** — If the issue is complex, sensitive, or outside the scope of automation, the reply appropriately escalates to a human agent\n\n## Scoring\n\n- Score **1** — The reply correctly identifies the category AND contains no hallucinated information AND escalates when required.\n- Score **0** — Any single failure: wrong category, hallucinated content, or missed escalation\n\n## Evaluation Process\n\n1. Identify the core issue and intent in the CUSTOMER EMAIL\n2. Check whether the AUTO REPLY addresses the correct category of that issue\n3. Verify that all factual claims in the reply are plausible and grounded — flag anything that appears fabricated or unverifiable\n4. Assess whether the issue warranted escalation and, if so, whether the reply handled that correctly\n5. Provide detailed step-by-step reasoning before stating your score\n6. Summarize your reasoning in one sentence\n7. Do not state your final score at the beginning of your reasoning\n\n## Output Format\n\nReturn your evaluation as a JSON object:\n\n{\n  \"extended_reasoning\": \"<detailed step-by-step analysis of category, grounding, and escalation>\",\n  \"reasoning_summary\": \"<one sentence summary of your conclusion>\",\n  \"score\": <0 or 1>\n}\n\n## Examples\n\n**CUSTOMER EMAIL:** \"I was charged twice for my subscription this month. Please fix this immediately.\"\n**AUTO REPLY:** \"We're sorry to hear this. Duplicate charges are usually resolved within 3–5 business days. Our billing team will review your account and issue a refund if applicable.\"\n**EVALUATION:** Score 1 — Correct category (billing), reply is grounded and appropriately routes to the billing team.\n\n---\n\n**CUSTOMER EMAIL:** \"My account has been hacked and someone changed my email address.\"\n**AUTO REPLY:** \"Thank you for reaching out! You can reset your password at any time using the forgot password link on our login page.\"\n**EVALUATION:** Score 0 — Missed escalation. A compromised account with a changed email is a security emergency requiring immediate human intervention; a self-service password reset is insufficient and potentially harmful advice.",
+              "content": "You are an expert evaluator assessing the quality of automated \ncustomer support email replies.\n\nYou will be given the original CUSTOMER EMAIL and the AUTO REPLY \nsent in response. Evaluate the reply across three independent \ndimensions and return a structured verdict.\n\n---\n\n## Dimensions & Scoring\n\n### 1. Category Identification (category_score)\nDoes the reply correctly identify and address the type of issue?\n\n- 2 — Exact match: the reply addresses the precise issue type \n       (e.g., billing dispute, account compromise, shipping delay)\n- 1 — Adjacent match: the reply addresses a related but not exact \n       category (e.g., treats a billing-account overlap as purely \n       a billing issue)\n- 0 — Wrong category: the reply addresses an entirely different \n       issue or ignores the core problem\n\n### 2. Grounding (grounding_score)\nAre all factual claims in the reply accurate and verifiable?\n\n- 2 — Fully grounded: every policy, price, timeline, and \n       instruction is plausible and consistent with standard \n       support practices; nothing appears fabricated\n- 1 — Minor gap: one claim is unverifiable but not actively \n       harmful or misleading (e.g., a vague timeline with no \n       downstream risk)\n- 0 — Hallucination present: the reply contains a fabricated \n       policy, invented price, false timeline, or instructions \n       that could mislead or harm the customer\n\n### 3. Escalation Handling (escalation_score)\nWas the escalation decision correct and sufficient?\n\n- 2 — Correct decision: complex, sensitive, or out-of-scope \n       issues are escalated to a human agent; routine issues are \n       handled without unnecessary escalation\n- 1 — Incomplete escalation: escalation is attempted but \n       insufficiently — e.g., mentions a human agent without \n       providing a clear path, or escalates too late after \n       giving problematic self-service advice first\n- 0 — Escalation failure: a required escalation is entirely \n       missed, OR an unnecessary escalation adds friction to a \n       routine request\n\n---\n\n## Verdict Logic\n\nDerive the final verdict from the three dimension scores:\n\n| Condition                                    | Verdict  |\n|----------------------------------------------|----------|\n| All three dimensions score 2                 | \"pass\"   |\n| Any dimension scores 1, none score 0         | \"review\" |\n| Any dimension scores 0                       | \"fail\"   |\n\n**Dimension weights:**\n- grounding = 0 → always \"fail\", regardless of other scores\n- escalation = 0 → always \"fail\", regardless of other scores\n- category = 0 → always \"fail\", regardless of other scores\n\n\"review\" cases should be routed to a human agent queue — \ndo not auto-approve or auto-reject.\n\n---\n\n## Evaluation Process\n\n1. Identify the core issue and intent in the CUSTOMER EMAIL\n2. Score category_score and explain your reasoning\n3. Score grounding_score — flag any specific claim that appears \n   fabricated or unverifiable\n4. Score escalation_score — state whether escalation was required \n   and how the reply handled it\n5. Derive the verdict from the scoring table above\n6. Summarize your conclusion in one sentence\n7. Do not state your final verdict at the beginning of your reasoning\n\n---\n\n## Output Format\n\nReturn your evaluation as a JSON object:\n\n{\n  \"category_score\": <0, 1, or 2>,\n  \"grounding_score\": <0, 1, or 2>,\n  \"escalation_score\": <0, 1, or 2>,\n  \"extended_reasoning\": \"<step-by-step analysis covering all \n                          three dimensions>\",\n  \"reasoning_summary\": \"<one sentence summary of your conclusion>\",\n  \"verdict\": \"<pass | review | fail>\"\n}\n\n---\n\n## Examples\n\n**CUSTOMER EMAIL:** \n\"I was charged twice for my subscription this month. \nPlease fix this immediately.\"\n\n**AUTO REPLY:** \n\"We're sorry to hear this. Duplicate charges are usually resolved \nwithin 3–5 business days. Our billing team will review your account \nand issue a refund if applicable.\"\n\n**EVALUATION:**\n{\n  \"category_score\": 2,\n  \"grounding_score\": 2,\n  \"escalation_score\": 2,\n  \"extended_reasoning\": \"Category: billing dispute, correctly \n    identified and addressed. Grounding: the 3–5 business day \n    timeline and conditional refund language are both standard \n    and plausible. Escalation: routing to the billing team is \n    appropriate for this issue type; no further escalation \n    required.\",\n  \"reasoning_summary\": \"Reply correctly handles a routine billing \n    dispute with grounded information and appropriate routing.\",\n  \"verdict\": \"pass\"\n}\n\n---\n\n**CUSTOMER EMAIL:** \n\"My account has been hacked and someone changed my email address.\"\n\n**AUTO REPLY:** \n\"Thank you for reaching out! You can reset your password at any \ntime using the forgot password link on our login page.\"\n\n**EVALUATION:**\n{\n  \"category_score\": 1,\n  \"grounding_score\": 1,\n  \"escalation_score\": 0,\n  \"extended_reasoning\": \"Category: the reply treats this as a \n    routine account access issue, but the customer explicitly \n    describes a compromised account with a changed email — a \n    security emergency. Adjacent match at best. Grounding: the \n    password reset advice is technically accurate in isolation \n    but inapplicable here since the email address has already \n    been changed, making it potentially misleading. Escalation: \n    a compromised account with altered credentials is a security \n    emergency requiring immediate human intervention; no \n    escalation was attempted.\",\n  \"reasoning_summary\": \"The reply fails to escalate a security \n    emergency and offers self-service advice that is inapplicable \n    given the account state.\",\n  \"verdict\": \"fail\"\n}",
               "role": "model"
             },
             {
@@ -218,10 +191,7 @@
       },
       "type": "@n8n/n8n-nodes-langchain.googleGemini",
       "typeVersion": 1.1,
-      "position": [
-        1680,
-        2688
-      ],
+      "position": [1680, 2688],
       "id": "22d855d3-659e-4fcc-a659-ca8f88f2cbaa",
       "name": "Calculate doc relevance metrics1",
       "retryOnFail": false,
@@ -239,26 +209,23 @@
       "parameters": {
         "documentId": {
           "__rl": true,
-          "value": "YOUR_SPREADSHEET_ID",
+          "value": "",
           "mode": "list",
           "cachedResultName": "nexus-product-knowledge",
-          "cachedResultUrl": ""
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d//edit?usp=drivesdk"
         },
         "sheetName": {
           "__rl": true,
           "value": 545109226,
           "mode": "list",
           "cachedResultName": "nexus-product-knowledge",
-          "cachedResultUrl": ""
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d//edit#gid=545109226"
         },
         "options": {}
       },
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
-      "position": [
-        880,
-        2992
-      ],
+      "position": [880, 2992],
       "id": "7ed55e57-bb7a-4919-8bbe-f0354eb27227",
       "name": "Product knowledge",
       "credentials": {
@@ -272,26 +239,23 @@
       "parameters": {
         "documentId": {
           "__rl": true,
-          "value": "YOUR_SPREADSHEET_ID",
+          "value": "",
           "mode": "list",
           "cachedResultName": "nexus-product-integrations",
-          "cachedResultUrl": ""
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d//edit?usp=drivesdk"
         },
         "sheetName": {
           "__rl": true,
           "value": 2093855690,
           "mode": "list",
           "cachedResultName": "nexus-connectors",
-          "cachedResultUrl": ""
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d//edit#gid=2093855690"
         },
         "options": {}
       },
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
-      "position": [
-        880,
-        3136
-      ],
+      "position": [880, 3136],
       "id": "0296757c-0cb1-4af2-bddb-f66948973c47",
       "name": "Product integration",
       "credentials": {
@@ -305,26 +269,23 @@
       "parameters": {
         "documentId": {
           "__rl": true,
-          "value": "YOUR_SPREADSHEET_ID",
+          "value": "",
           "mode": "list",
           "cachedResultName": "nexus-escalation-rules",
-          "cachedResultUrl": ""
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d//edit?usp=drivesdk"
         },
         "sheetName": {
           "__rl": true,
           "value": 1483494880,
           "mode": "list",
           "cachedResultName": "nexus-escalation-rules",
-          "cachedResultUrl": ""
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d//edit#gid=1483494880"
         },
         "options": {}
       },
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
-      "position": [
-        880,
-        3296
-      ],
+      "position": [880, 3296],
       "id": "f2f81490-3046-460e-a3d0-dd0e9a4633b7",
       "name": "Escalation rules",
       "credentials": {
@@ -338,26 +299,23 @@
       "parameters": {
         "documentId": {
           "__rl": true,
-          "value": "YOUR_SPREADSHEET_ID",
+          "value": "",
           "mode": "list",
           "cachedResultName": "nexus-customer-list",
-          "cachedResultUrl": ""
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d//edit?usp=drivesdk"
         },
         "sheetName": {
           "__rl": true,
           "value": 1311407954,
           "mode": "list",
           "cachedResultName": "nexus-customers",
-          "cachedResultUrl": ""
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d//edit#gid=1311407954"
         },
         "options": {}
       },
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
-      "position": [
-        880,
-        3456
-      ],
+      "position": [880, 3456],
       "id": "ea8fbb67-d52f-415e-b07b-7772b5272df9",
       "name": "Customer list",
       "credentials": {
@@ -371,26 +329,23 @@
       "parameters": {
         "documentId": {
           "__rl": true,
-          "value": "YOUR_SPREADSHEET_ID",
+          "value": "",
           "mode": "list",
           "cachedResultName": "nexus-pricing-plans",
-          "cachedResultUrl": ""
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d//edit?usp=drivesdk"
         },
         "sheetName": {
           "__rl": true,
           "value": 21210099,
           "mode": "list",
           "cachedResultName": "nexus-pricing-plans",
-          "cachedResultUrl": ""
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d//edit#gid=21210099"
         },
         "options": {}
       },
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
-      "position": [
-        880,
-        3616
-      ],
+      "position": [880, 3616],
       "id": "c9c5f62e-8103-4f7e-b399-ae3698604429",
       "name": "Pricing plans",
       "credentials": {
@@ -404,26 +359,23 @@
       "parameters": {
         "documentId": {
           "__rl": true,
-          "value": "YOUR_SPREADSHEET_ID",
+          "value": "",
           "mode": "list",
           "cachedResultName": "nexus-security-approved-responses",
-          "cachedResultUrl": ""
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d//edit?usp=drivesdk"
         },
         "sheetName": {
           "__rl": true,
           "value": 207773088,
           "mode": "list",
           "cachedResultName": "nexus-security-approved-responses",
-          "cachedResultUrl": ""
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d//edit#gid=207773088"
         },
         "options": {}
       },
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
-      "position": [
-        880,
-        3776
-      ],
+      "position": [880, 3776],
       "id": "f7ce7df6-8cf7-4a76-9b82-f2ebb5e585b9",
       "name": "Security approved responses",
       "credentials": {
@@ -436,32 +388,24 @@
     {
       "parameters": {
         "rule": {
-          "interval": [
-            {}
-          ]
+          "interval": [{}]
         }
       },
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.3,
-      "position": [
-        368,
-        3280
-      ],
+      "position": [368, 3280],
       "id": "f324e6a0-d872-414a-a774-ca8b6bc62c64",
       "name": "Schedule Trigger"
     },
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={\n  \"response\": {{ JSON.stringify($('AI Draft Writer').item.json.output) }}\n}",
+        "responseBody": "={\n  \"response\": {{ JSON.stringify($('AI Agent').item.json.output) }}\n}",
         "options": {}
       },
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
-      "position": [
-        2288,
-        2832
-      ],
+      "position": [2288, 2832],
       "id": "34410ef2-92bf-4a7e-b6d1-a7d138701a17",
       "name": "Send reply",
       "retryOnFail": true,
@@ -470,15 +414,12 @@
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={\n  \"response\": {{ JSON.stringify($('Draft Writer Agent').item.json.output) }}\n}",
+        "responseBody": "={\n  \"response\": {{ JSON.stringify($('AI Agent').item.json.output) }}\n}",
         "options": {}
       },
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
-      "position": [
-        2400,
-        3024
-      ],
+      "position": [2400, 3024],
       "id": "a317b96f-19cf-4dca-bc12-f0e8f1843ba9",
       "name": "Escalate"
     },
@@ -495,7 +436,7 @@
             {
               "id": "ef30d73a-49a9-4838-8a78-4c6ccbb2883b",
               "leftValue": "={{ $json.score }}",
-              "rightValue": 1,
+              "rightValue": 2,
               "operator": {
                 "type": "number",
                 "operation": "equals"
@@ -508,10 +449,7 @@
       },
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
-      "position": [
-        2112,
-        2848
-      ],
+      "position": [2112, 2848],
       "id": "3b177b35-f948-499a-8db0-0179a5cc266a",
       "name": "Check accuracy"
     },
@@ -520,27 +458,24 @@
         "source": "googleSheets",
         "documentId": {
           "__rl": true,
-          "value": "YOUR_SPREADSHEET_ID",
+          "value": "",
           "mode": "list",
-          "cachedResultName": "nexus-inbox-inferno-test-dataset",
-          "cachedResultUrl": ""
+          "cachedResultName": "nexus-your-webhook-path-test-dataset",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d//edit?usp=drivesdk"
         },
         "sheetName": {
           "__rl": true,
           "value": 1893026158,
           "mode": "list",
-          "cachedResultName": "nexus-inbox-inferno-test-datase",
-          "cachedResultUrl": ""
+          "cachedResultName": "nexus-your-webhook-path-test-datase",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d//edit#gid=1893026158"
         },
         "limitRows": true,
-        "maxRows": 1
+        "maxRows": 5
       },
       "type": "n8n-nodes-base.evaluationTrigger",
       "typeVersion": 4.7,
-      "position": [
-        384,
-        2688
-      ],
+      "position": [240, 2672],
       "id": "8a933d83-f4f2-486c-bccd-0920e08737c7",
       "name": "Evaluation Dataset",
       "credentials": {
@@ -548,7 +483,8 @@
           "id": "",
           "name": "Google Sheets account"
         }
-      }
+      },
+      "onError": "continueRegularOutput"
     },
     {
       "parameters": {
@@ -561,10 +497,7 @@
       "name": "Sticky Note15",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
-      "position": [
-        320,
-        3120
-      ]
+      "position": [320, 3120]
     },
     {
       "parameters": {
@@ -581,10 +514,7 @@
       },
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.9,
-      "position": [
-        608,
-        2592
-      ],
+      "position": [608, 2592],
       "id": "cc418ac1-24a2-4c7e-948d-4c7fc3095a31",
       "name": "Classify Category"
     },
@@ -599,10 +529,7 @@
       "name": "Sticky Note16",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
-      "position": [
-        1776,
-        2544
-      ]
+      "position": [1776, 2544]
     },
     {
       "parameters": {
@@ -617,10 +544,7 @@
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
       "typeVersion": 1.3,
-      "position": [
-        576,
-        2816
-      ],
+      "position": [576, 2816],
       "id": "c0d668d9-cf66-4cc7-8aab-cc2e10ec4996",
       "name": "Classifier (GPT 4o Mini)",
       "credentials": {
@@ -638,10 +562,7 @@
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
-      "position": [
-        1168,
-        2688
-      ],
+      "position": [1168, 2688],
       "id": "ee41d235-0f96-4a5e-b122-518e9209a16c",
       "name": "AI Agent",
       "onError": "continueErrorOutput"
@@ -659,10 +580,7 @@
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
       "typeVersion": 1.3,
-      "position": [
-        1072,
-        2880
-      ],
+      "position": [1072, 2880],
       "id": "b52c9076-311e-4b5a-988c-7b8fa80de513",
       "name": "Draft Writer Model (GPT 4o Mini)",
       "credentials": {
@@ -678,10 +596,7 @@
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        1984,
-        2672
-      ],
+      "position": [1984, 2672],
       "id": "f1e1ac3f-8e58-4fda-945f-a87d40115e7e",
       "name": "Parse results"
     },
@@ -690,23 +605,23 @@
         "source": "googleSheets",
         "documentId": {
           "__rl": true,
-          "value": "YOUR_SPREADSHEET_ID",
+          "value": "",
           "mode": "list",
-          "cachedResultName": "nexus-inbox-inferno-test-dataset",
-          "cachedResultUrl": ""
+          "cachedResultName": "nexus-your-webhook-path-test-dataset",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d//edit?usp=drivesdk"
         },
         "sheetName": {
           "__rl": true,
           "value": 1893026158,
           "mode": "list",
-          "cachedResultName": "nexus-inbox-inferno-test-datase",
-          "cachedResultUrl": ""
+          "cachedResultName": "nexus-your-webhook-path-test-datase",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d//edit#gid=1893026158"
         },
         "outputs": {
           "values": [
             {
               "outputName": "actual_category",
-              "outputValue": "={{ $('Map fields').item.json.category }}"
+              "outputValue": "={{ JSON.parse($('Classify Category').item.json.text).category }}"
             },
             {
               "outputName": "score",
@@ -721,10 +636,7 @@
       },
       "type": "n8n-nodes-base.evaluation",
       "typeVersion": 4.8,
-      "position": [
-        2176,
-        2672
-      ],
+      "position": [2176, 2672],
       "id": "97897cbe-f9df-4835-94e7-d52cd476dcda",
       "name": "Write into test dataset",
       "credentials": {
@@ -740,10 +652,7 @@
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        912,
-        2592
-      ],
+      "position": [912, 2592],
       "id": "e7a83811-cac4-4920-8f4d-876cc23b62ed",
       "name": "Map fields"
     },
@@ -753,12 +662,17 @@
       },
       "type": "n8n-nodes-base.evaluation",
       "typeVersion": 4.8,
-      "position": [
-        1504,
-        2672
-      ],
+      "position": [1504, 2672],
       "id": "a67b1499-77fb-4275-aa55-18f808e50e4c",
       "name": "Evaluation draft writer"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [416, 2592],
+      "id": "c6c1dd26-a553-4d88-bcae-c3a48e37b7fa",
+      "name": "No Operation, do nothing"
     }
   ],
   "pinData": {},
@@ -805,7 +719,7 @@
       "main": [
         [
           {
-            "node": "Classify Category",
+            "node": "No Operation, do nothing",
             "type": "main",
             "index": 0
           }
@@ -918,11 +832,12 @@
       "main": [
         [
           {
-            "node": "Classify Category",
+            "node": "No Operation, do nothing",
             "type": "main",
             "index": 0
           }
-        ]
+        ],
+        []
       ]
     },
     "Schedule Trigger": {
@@ -1068,6 +983,17 @@
         [
           {
             "node": "Calculate doc relevance metrics1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "No Operation, do nothing": {
+      "main": [
+        [
+          {
+            "node": "Classify Category",
             "type": "main",
             "index": 0
           }

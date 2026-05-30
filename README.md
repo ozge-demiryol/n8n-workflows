@@ -14,7 +14,7 @@ This repository contains various workflows designed to solve real-world problems
 
 | Workflow Name                 | Category         | Primary Nodes                                  |                         Link                          |
 | :---------------------------- | :--------------- | :--------------------------------------------- | :---------------------------------------------------: |
-| **AI Customer Support Agent** | Customer Support | OpenAI, Gemini, Google Sheets, Supabase Vector | [View Project](./02-customer-support-inbox-with-eval) |
+| **AI Customer Support Agent** | Customer Support | OpenAI, Gemini, Google Sheets, Supabase Vector | [View Project](./01-customer-support-inbox-with-eval) |
 
 
 ## 🛠️ How to Use

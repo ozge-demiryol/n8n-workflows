@@ -48,7 +48,12 @@ Bu otomasyon sistemi, çift katmanlı bir doğrulama sistemi uygular: her AI tas
 | Otomasyon Oranı    | %0                | %70–85         |
 
 > [!NOTE]
-> Başarı, "Judge" (Hakem) düğümünün kategori doğruluğu, veri tutarlılığı ve doğru eskalasyon kriterlerine göre 1 puan vermesiyle tanımlanır. En az bir kriterin doğrulanması başarısız olduğu durumda Hakem LLM 0 puan vererek eskale eder.
+> Başarı, Hakem LLM'nin **"pass"** kararı vermesiyle tanımlanır. Her yanıt üç bağımsız boyutta (her biri 0–2) puanlanır:
+> - **Kategori Tespiti** — 2: tam sorun türü eşleşmesi / 1: yakın ama tam olmayan eşleşme / 0: yanlış kategori
+> - **Veri Tutarlılığı (Grounding)** — 2: tüm iddialar doğrulanabilir / 1: zararsız tek bir doğrulanamaz iddia / 0: halüsinasyon mevcut
+> - **Eskalasyon Yönetimi** — 2: doğru karar / 1: eksik eskalasyon / 0: gerekli eskalasyon atlandı veya gereksiz eskalasyon yapıldı
+>
+> Karar: tüm boyutlar 2 → **pass** (otomatik gönder) · herhangi biri 1, hiçbiri 0 değil → **review** (insan kuyruğu) · herhangi biri 0 → **fail** (anında eskalasyon). Herhangi bir boyutun 0 alması, diğerlerinden bağımsız olarak her zaman **fail** kararı verir.
 
 ---
 
@@ -56,7 +61,7 @@ Bu otomasyon sistemi, çift katmanlı bir doğrulama sistemi uygular: her AI tas
 
 - **Çok Aşamalı Sınıflandırma** — E-postaları Kurulum, Güvenlik, Fiyatlandırma, Faturalandırma, Hukuk, Satış veya İK kategorilerine ayırır.
 - **RAG Entegrasyonu** — Bilgi havuzundan doğru bilgiyi getirmek için Supabase Vektör Veritabanı ve Gemini Embeddings kullanır.
-- **LLM-as-Judge Değerlendirmesi** — Gemini 3 Flash bazlı hakem LLM (LLM-as-judge), yanıtları müşteriye göndermeden önce doğruluk açısından denetler.
+- **LLM-as-Judge Değerlendirmesi** — Gemini 2.5 Flash tabanlı hakem LLM, yanıtları müşteriye göndermeden önce üç bağımsız boyutta (kategori, veri tutarlılığı, eskalasyon) puanlayarak denetler.
 - **Güvenli Eskalasyon** — Karmaşık veya riskli durumları otomatik olarak insan temsilcilere yönlendirir.
 - **Otomatik Bilgi Güncelleme** — Günlük çalışan scheduler, Google Sheets verilerini vektör veritabanıyla senkronize eder.
 
@@ -72,8 +77,9 @@ Bu otomasyon sistemi, çift katmanlı bir doğrulama sistemi uygular: her AI tas
 [AI Ajan + RAG]
        ↓
 [Hakem LLM Değerlendirmesi]
-       ├─→ Puan 1 → [E-posta Gönder]
-       └─→ Puan 0 → [İnsan Eskalasyonu]
+       ├─→ pass (geç)    → [E-posta Gönder]
+       ├─→ review (incele) → [İnsan Kuyruğu]
+       └─→ fail (başarısız) → [İnsan Eskalasyonu]
 
 [Günlük Zamanlanmış Görev] 
        ↓
@@ -86,7 +92,7 @@ Bu otomasyon sistemi, çift katmanlı bir doğrulama sistemi uygular: her AI tas
 | ------------------ | ------------------- | -------------------------------------------------------------- |
 | n8n                | Orkestrasyonu       | Low-code araç esnekliği.                                       |
 | GPT-4o Mini        | Sınıflandırıcı/Ajan | Rutin görevler için yüksek performans-maliyet oranı.           |
-| Gemini 3 Flash     | Hakem LLM           | Doğruluğu daha yüksek değerlendirme için daha güçlü model.     |
+| Gemini 2.5 Flash     | Hakem LLM           | Çok boyutlu değerlendirme için daha güçlü model.               |
 | Gemini Embedding 2 | Vektörleştirme      | Belgeler için üstün semantik arama yetenekleri.                |
 | Supabase           | Vektör Deposu       | Ölçeklenebilir, açık kaynaklı Postgres tabanlı vektör araması. |
 | Google Sheets      | Bilgi Bankası       | Teknik olmayan personel için kolay veri güncelleme.            |
@@ -99,7 +105,25 @@ Bu otomasyon sistemi, çift katmanlı bir doğrulama sistemi uygular: her AI tas
 
 **Bağlam:** Yapay zeka ajanları bazen sistem talimatlarını görmezden gelebilir veya hatalı veri üretebilir (halüsinasyon). Tek katmanlı doğrulama üretim ortamı için yeterli değildir.
 
-**Karar:** İlk ajanın çıktısını bilgi havuzundaki verilerle karşılaştırıp denetlemek ve puanlamak için tamamen ayrı bir LLM düğümü eklendi.
+**Karar:** İlk ajanın çıktısını bilgi havuzundaki verilerle karşılaştırıp denetlemek ve puanlamak için tamamen ayrı bir LLM düğümü eklendi. Hakem, her yanıtı üç bağımsız boyutta değerlendirerek yapılandırılmış bir karar üretir.
+
+**Rubrik:**
+
+| Boyut | 2 — Tam puan | 1 — Kısmi puan | 0 — Başarısız |
+|---|---|---|---|
+| **Kategori Tespiti** | Tam sorun türü doğru tespit edildi (ör. fatura anlaşmazlığı, hesap ele geçirilmesi) | İlgili ama tam olmayan kategori (ör. fatura-hesap örtüşmesi yalnızca faturalama sorunu olarak ele alındı) | Tamamen yanlış kategori veya asıl sorun görmezden gelindi |
+| **Veri Tutarlılığı (Grounding)** | Tüm politika, fiyat, zaman çizelgesi ve talimatlar doğrulanabilir; hiçbir şey uydurulmamış | Zararlı veya yanıltıcı olmayan tek bir doğrulanamaz iddia mevcut | Uydurulmuş politika, gerçek olmayan fiyat, yanlış zaman çizelgesi veya müşteriyi yanıltacak talimat içeriyor |
+| **Eskalasyon Yönetimi** | Karmaşık/hassas sorunlar eskalasyona yönlendirildi; rutin sorunlar gereksiz eskalasyon olmadan çözüldü | Eskalasyon denendi ancak yetersiz (net bir yol gösterilmedi veya sorunlu self-servis tavsiyeden sonra eskalasyon yapıldı) | Gerekli eskalasyon tamamen atlandı ya da rutin bir istek için gereksiz eskalasyon eklendi |
+
+**Karar mantığı:**
+
+| Koşul | Karar | Eylem |
+|---|---|---|
+| Üç boyut da 2 puan aldı | **pass** | Yanıtı otomatik gönder |
+| Herhangi biri 1 puan aldı, hiçbiri 0 değil | **review** | İnsan ajanı kuyruğuna yönlendir |
+| Herhangi biri 0 puan aldı | **fail** | Anında eskalasyon |
+
+> `grounding`, `escalation` veya `category` boyutundan 0 puan alınması, diğer puanlardan bağımsız olarak her zaman **fail** kararını zorlar.
 
 **Diğer Seçenekler:**
 - Daha güçlü sistem promptlarıyla tek ajan — ilgi alanlarının yeterli izolasyonunu sağlamaz.
@@ -107,7 +131,8 @@ Bu otomasyon sistemi, çift katmanlı bir doğrulama sistemi uygular: her AI tas
 
 **Ödünleşimler (Trade-off):**
 - ✅ Hatalı yanıtlar önemli ölçüde azalır.
-- ✅ AI çıktılarının doğruluğu otomatik denetlenir.
+- ✅ AI çıktılarının doğruluğu boyut bazında otomatik denetlenir.
+- ✅ Üç yönlü yönlendirme; sınır durumdaki yanıtların otomatik gönderilmesini veya sessizce düşürülmesini engeller.
 - ⚠️ E-posta başına token maliyeti artar (~ticket başına 3 API çağrısı).
 - ⚠️ Yanıt süresi biraz artar (yaklaşık +3 saniye).
 
@@ -151,7 +176,7 @@ Bu otomasyon sistemi, çift katmanlı bir doğrulama sistemi uygular: her AI tas
 2. İlgili belgeleri Supabase'den sorgulanır.
 3. AI Ajan aracılığıyla bir yanıt oluşturur.
 4. Yanıtın doğruluğu açısından değerlendirir.
-5. E-postayı gönderir veya kalite düşükse Slack'e eskalasyonu yapır.
+5. E-postayı gönderir, insan inceleme kuyruğuna yönlendirir veya hakem kararına göre eskalasyon yapar.
 
 ---
 
@@ -162,7 +187,7 @@ Bu otomasyon sistemi, çift katmanlı bir doğrulama sistemi uygular: her AI tas
 | `openai_api_key`  | ✅       | Sınıflandırma ve denetleme için kullanılır. |
 | `supabase_url`    | ✅       | Vektör veritabanı endpoint.                 |
 | `spreadsheet_id`  | ✅       | Bilgi bankasını içeren Google Sheets ID'si. |
-| `judge_threshold` | ❌       | Otomatik gönderim için puan eşiği (0–1).    |
+| `judge_threshold` | ❌       | Karar eşiği geçersiz kılma: **pass** için her boyutun alması gereken minimum puan (varsayılan: tümü 2). |
 
 ---
 

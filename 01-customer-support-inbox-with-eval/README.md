@@ -48,7 +48,12 @@ This automation system implements a dual-layer validation system: every AI-gener
 | Automation Rate    | 0%           | 70–85%         |
 
 > [!NOTE]
-> Success is defined by the "Judge" node returning a score of 1 based on category accuracy, grounding, and proper escalation.
+> Success is defined by the Judge LLM returning a **"pass"** verdict. Each reply is scored across three dimensions (0–2 each):
+> - **Category Identification** — 2: exact issue type match / 1: adjacent match / 0: wrong category
+> - **Grounding** — 2: all claims verifiable / 1: one minor unverifiable claim / 0: hallucination present
+> - **Escalation Handling** — 2: correct decision / 1: incomplete escalation / 0: missed or unnecessary escalation
+>
+> Verdict: all 2s → **pass** (auto-send) · any 1, no 0s → **review** (human queue) · any 0 → **fail** (immediate escalation). A score of 0 in any dimension forces **fail** regardless of others.
 
 ---
 
@@ -56,7 +61,7 @@ This automation system implements a dual-layer validation system: every AI-gener
 
 - **Multi-Step Classification** — Categorizes emails into Setup, Security, Pricing, Billing, Legal, Sales, or HR.
 - **RAG Integration** — Uses Supabase Vector Store and Gemini Embeddings for factual retrieval.
-- **LLM-as-Judge Evaluation** — Gemini 3 Flash based judge scores replies for accuracy before sending them customers.
+- **LLM-as-Judge Evaluation** — Gemini 2.5 Flash judge scores replies across three independent dimensions (category, grounding, escalation) before sending them to customers.
 - **Fail-Safe Escalation** — Routes complex or sensitive issues (e.g., hacked accounts) to human agents.
 - **Automated Knowledge Refresh** — Daily scheduler synchronizes Google Sheets data with the vector database.
 
@@ -72,8 +77,9 @@ This automation system implements a dual-layer validation system: every AI-gener
 [AI Agent + RAG]
        ↓
 [Judge LLM Evaluation]
-       ├─→ Score 1 → [Send Email]
-       └─→ Score 0 → [Human Escalation]
+       ├─→ pass   → [Send Email]
+       ├─→ review → [Human Queue]
+       └─→ fail   → [Human Escalation]
 
 [Daily Schedule] 
        ↓
@@ -86,7 +92,7 @@ This automation system implements a dual-layer validation system: every AI-gener
 | ------------------ | ---------------- | ---------------------------------------------------- |
 | n8n                | Orchestration    | Low-code flexibility with powerful error handling.   |
 | GPT-4o Mini        | Classifier/Agent | High performance-to-cost ratio for routine tasks.    |
-| Gemini 3 Flash     | Judge LLM        | Stronger model for more accurate evaluation.         |
+| Gemini 2.5 Flash   | Judge LLM        | Stronger model for more accurate multi-dimension evaluation. |
 | Gemini Embedding 2 | Vectorization    | Superior semantic search capabilities.               |
 | Supabase           | Vector Store     | Scalable, open-source Postgres-based vector search.  |
 | Google Sheets      | Knowledge Base   | Easy for non-technical staff to update product data. |
@@ -99,7 +105,25 @@ This automation system implements a dual-layer validation system: every AI-gener
 
 **Context:** AI agents can sometimes ignore system prompts or fabricate data (hallucinations). A single layer of validation is insufficient for production use.
 
-**Decision:** Implement a separate LLM node specifically to grade the output of the first agent against the knowledge base before delivery.
+**Decision:** Implement a separate LLM node specifically to grade the output of the first agent against the knowledge base before delivery. The judge evaluates each reply across three independent dimensions and returns a structured verdict.
+
+**Rubric:**
+
+| Dimension | 2 — Full credit | 1 — Partial credit | 0 — Fail |
+|---|---|---|---|
+| **Category Identification** | Exact issue type addressed (e.g. billing dispute, account compromise) | Related but not exact category (e.g. billing-account overlap treated as purely billing) | Wrong category or core problem ignored |
+| **Grounding** | Every policy, price, timeline, and instruction is plausible; nothing fabricated | One unverifiable claim that is not actively harmful or misleading | Fabricated policy, invented price, false timeline, or harmful instruction |
+| **Escalation Handling** | Complex/sensitive issues escalated; routine issues handled without unnecessary escalation | Escalation attempted but insufficient (no clear path, or after problematic self-service advice) | Required escalation missed entirely, or unnecessary escalation on a routine request |
+
+**Verdict logic:**
+
+| Condition | Verdict | Action |
+|---|---|---|
+| All three dimensions score 2 | **pass** | Auto-send reply |
+| Any dimension scores 1, none score 0 | **review** | Route to human agent queue |
+| Any dimension scores 0 | **fail** | Immediate escalation |
+
+> A `grounding`, `escalation`, or `category` score of 0 always forces **fail**, regardless of the other scores.
 
 **Alternatives considered:**
 - Single agent with stronger system prompt — insufficient isolation of concerns.
@@ -107,8 +131,9 @@ This automation system implements a dual-layer validation system: every AI-gener
 
 **Trade-offs:**
 - ✅ Massive reduction in incorrect replies.
-- ✅ Automated auditing of performance.
-- ⚠️ Increased token cost per email (~2 API calls per ticket).
+- ✅ Automated auditing of performance with granular per-dimension scores.
+- ✅ Three-way routing prevents borderline replies from being auto-sent or silently dropped.
+- ⚠️ Increased token cost per email (~3 API calls per ticket).
 - ⚠️ Slightly higher latency (approx. +3 seconds per email).
 
 ---
@@ -151,7 +176,7 @@ The workflow will:
 2. Query Supabase for relevant documentation.
 3. Generate a response via the AI Agent.
 4. Judge the response for accuracy.
-5. Send the email or escalate to Slack if quality is low.
+5. Send the email, route to human review queue, or escalate — based on the judge verdict.
 
 ---
 
@@ -162,7 +187,7 @@ The workflow will:
 | `openai_api_key`  | ✅        | Used for classification and judgment.    |
 | `supabase_url`    | ✅        | Vector database endpoint.                |
 | `spreadsheet_id`  | ✅        | Google Sheets ID for the knowledge base. |
-| `judge_threshold` | ❌        | Score threshold for auto-sending (0–1).  |
+| `judge_threshold` | ❌        | Override verdict threshold: minimum score per dimension to count as "pass" (default: all must be 2). |
 
 ---
 
